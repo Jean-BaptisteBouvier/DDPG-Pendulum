@@ -19,11 +19,11 @@ from torch.autograd import Variable
 
 
 class Critic(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
+    def __init__(self, input_size, hidden_size):
         super(Critic, self).__init__()
         self.net = nn.Sequential( nn.Linear(input_size, hidden_size), nn.ReLU(),
                                   nn.Linear(hidden_size, hidden_size), nn.ReLU(),
-                                  nn.Linear(hidden_size, output_size))
+                                  nn.Linear(hidden_size, 1)) # Q-value is scalar
 
     def forward(self, state, action):
         return self.net(torch.cat([state, action], 1))
@@ -63,8 +63,8 @@ class DDPG_agent:
         # Networks
         self.actor = Actor(self.num_states, hidden_size, self.num_actions)
         self.actor_target = Actor(self.num_states, hidden_size, self.num_actions)
-        self.critic = Critic(self.num_states + self.num_actions, hidden_size, self.num_actions)
-        self.critic_target = Critic(self.num_states + self.num_actions, hidden_size, self.num_actions)
+        self.critic = Critic(self.num_states + self.num_actions, hidden_size)
+        self.critic_target = Critic(self.num_states + self.num_actions, hidden_size)
 
         for target_param, param in zip(self.actor_target.parameters(), self.actor.parameters()):
             target_param.data.copy_(param.data)
